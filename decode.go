@@ -713,6 +713,7 @@ func (d *decoder) scalar(n *Node, out reflect.Value) bool {
 			if parse, err := url.Parse(n.Value); err == nil {
 				u := *parse
 				out.Set(reflect.ValueOf(u))
+				return true
 			} else {
 				fmt.Printf("failed to parse url: %s", n.Value)
 				return false
