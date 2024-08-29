@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/url"
 	"reflect"
 	"strconv"
 	"time"
@@ -708,7 +709,15 @@ func (d *decoder) scalar(n *Node, out reflect.Value) bool {
 			return true
 		}
 	case reflect.Struct:
-		if resolvedv := reflect.ValueOf(resolved); out.Type() == resolvedv.Type() {
+		if out.Type() == reflect.TypeOf(url.URL{}) {
+			if parse, err := url.Parse(n.Value); err == nil {
+				u := *parse
+				out.Set(reflect.ValueOf(u))
+			} else {
+				fmt.Printf("failed to parse url: %s", n.Value)
+				return false
+			}
+		} else if resolvedv := reflect.ValueOf(resolved); out.Type() == resolvedv.Type() {
 			out.Set(resolvedv)
 			return true
 		}
