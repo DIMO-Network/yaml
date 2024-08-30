@@ -19,6 +19,7 @@ import (
 	"encoding"
 	"encoding/base64"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"io"
 	"math"
 	"net/url"
@@ -709,18 +710,30 @@ func (d *decoder) scalar(n *Node, out reflect.Value) bool {
 			return true
 		}
 	case reflect.Struct:
-		if out.Type() == reflect.TypeOf(url.URL{}) {
+		// support special types
+		switch out.Type() {
+		case reflect.TypeOf(url.URL{}):
 			if parse, err := url.Parse(n.Value); err == nil {
 				u := *parse
 				out.Set(reflect.ValueOf(u))
 				return true
 			} else {
-				fmt.Printf("failed to parse url: %s", n.Value)
+				fmt.Printf("failed to parse url: %s\n", n.Value)
 				return false
 			}
-		} else if resolvedv := reflect.ValueOf(resolved); out.Type() == resolvedv.Type() {
-			out.Set(resolvedv)
+		case reflect.TypeOf(common.Address{}):
+			if !common.IsHexAddress(n.Value) {
+				fmt.Printf("environment variable %s is not a valid eth address\n", n.Value)
+				return false
+			}
+			addr := common.HexToAddress(n.Value)
+			out.Set(reflect.ValueOf(addr))
 			return true
+		default:
+			if resolvedv := reflect.ValueOf(resolved); out.Type() == resolvedv.Type() {
+				out.Set(resolvedv)
+				return true
+			}
 		}
 	case reflect.Ptr:
 		panic("yaml internal error: please report the issue")

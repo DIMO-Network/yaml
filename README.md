@@ -1,5 +1,12 @@
 # YAML support for the Go language
 
+# Changes for DIMO
+------------------
+
+Reason to fork this is to add support for custom types we use often in our services.
+To add a custom type, edit the `decoder.go` file under the reflect.Kind case of the `scalar` function. 
+
+
 Introduction
 ------------
 
